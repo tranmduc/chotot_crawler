@@ -1,12 +1,11 @@
-FROM golang:latest
-
-LABEL maintainer="linhnln"
+FROM python:3
 
 WORKDIR /app
-COPY go.mod go.sum ./
+COPY requirements.txt ./
 RUN go mod download
 COPY . .
 
-RUN go build main.go data_type.go util.go db.go
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-CMD [ "./main" ]
+CMD [ "python3", "./main.py" ]
+
