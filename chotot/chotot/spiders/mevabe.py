@@ -4,7 +4,7 @@ from datetime import datetime
 from chotot.items import Mevabe, MyItemLoader
 import leveldb
 
-db = leveldb.LevelDB("me_va_be")
+db = leveldb.LevelDB("db/me_va_be")
 
 def insert(item):
      db.Put(item['id'].encode('UTF-8'), item['tel'].encode('UTF-8'))
@@ -24,7 +24,7 @@ class MevabeSpider(scrapy.Spider):
     name = 'mevabe'
     start_urls = ['http://www.chotot.com/toan-quoc/mua-ban-do-dung-me-va-be/']
 
-    custom_settings = {'FEED_URI': "chotot_mevabe_%(time)s.csv",
+    custom_settings = {'FEED_URI': "output/chotot_mevabe_%(time)s.csv",
                        'FEED_FORMAT': 'csv'}
 
     def parse(self, response):
@@ -44,7 +44,7 @@ class MevabeSpider(scrapy.Spider):
             yield Request(item_url, callback=self.parse_item, meta={'time': posted_time[index]})
 
         next_page_number = 2
-        while (next_page_number < 3):
+        while (next_page_number < 617):
             absolute_next_page_url = 'https://www.chotot.com/toan-quoc/mua-ban-do-dung-me-va-be?page=' + str(
                 next_page_number)
             next_page_number = next_page_number + 1

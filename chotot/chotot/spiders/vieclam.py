@@ -5,7 +5,7 @@ from datetime import datetime
 from chotot.items import Vieclam
 import leveldb
 
-db = leveldb.LevelDB("vieclam")
+db = leveldb.LevelDB("db/vieclam")
 
 def insert(item):
      db.Put(item['id'].encode('UTF-8'), item['tel'].encode('UTF-8'))
@@ -24,7 +24,7 @@ def validate_time(string):
 class VieclamSpider(scrapy.Spider):
     name = 'vieclam'
     start_urls = ['http://www.chotot.com/toan-quoc/danh-sach-viec-lam/']
-    custom_settings = {'FEED_URI': "chotot_vieclam_%(time)s.csv",
+    custom_settings = {'FEED_URI': "output/chotot_vieclam_%(time)s.csv",
                        'FEED_FORMAT': 'csv'}
 
     def parse(self, response):
@@ -44,7 +44,7 @@ class VieclamSpider(scrapy.Spider):
             yield Request(item_url, callback=self.parse_item, meta={'time': posted_time[index]})
 
         next_page_number = 2
-        while (next_page_number < 3):
+        while (next_page_number < 1810):
             absolute_next_page_url = 'https://www.chotot.com/toan-quoc/danh-sach-viec-lam?page=' + str(
                 next_page_number)
             next_page_number = next_page_number + 1

@@ -5,7 +5,7 @@ from datetime import datetime
 from chotot.items import generalItem
 import leveldb
 
-db = leveldb.LevelDB("noithat")
+db = leveldb.LevelDB("db/noithat")
 
 def insert(item):
      db.Put(item['id'].encode('UTF-8'), item['tel'].encode('UTF-8'))
@@ -23,7 +23,7 @@ def validate_time(string):
 class NoithatSpider(scrapy.Spider):
     name = 'noithat'
     start_urls = ['http://www.chotot.com/toan-quoc/mua-ban-do-gia-dung-noi-that-cay-canh/']
-    custom_settings = {'FEED_URI': "chotot_noithat_%(time)s.csv",
+    custom_settings = {'FEED_URI': "output/chotot_noithat_%(time)s.csv",
                        'FEED_FORMAT': 'csv'}
 
     def parse(self, response):
@@ -43,7 +43,7 @@ class NoithatSpider(scrapy.Spider):
             yield Request(item_url, callback=self.parse_item, meta={'time': posted_time[index]})
 
         next_page_number = 2
-        while (next_page_number < 2):
+        while (next_page_number < 4406):
             absolute_next_page_url = 'https://www.chotot.com/toan-quoc/mua-ban-do-gia-dung-noi-that-cay-canh?page=' + str(
                 next_page_number)
             next_page_number = next_page_number + 1

@@ -5,7 +5,7 @@ from datetime import datetime
 from chotot.items import Dienthoai
 import leveldb
 
-db = leveldb.LevelDB("dienthoai")
+db = leveldb.LevelDB("db/dienthoai")
 
 def insert(item):
      db.Put(item['id'].encode('UTF-8'), item['tel'].encode('UTF-8'))
@@ -23,7 +23,7 @@ def validate_time(string):
 class DienthoaiSpider(scrapy.Spider):
     name = 'dienthoai'
     start_urls = ['http://www.chotot.com/toan-quoc/mua-ban-dien-thoai/']
-    custom_settings = {'FEED_URI': "chotot_dienthoai_%(time)s.csv",
+    custom_settings = {'FEED_URI': "output/chotot_dienthoai_%(time)s.csv",
                        'FEED_FORMAT': 'csv'}
 
     def parse(self, response):
@@ -43,7 +43,7 @@ class DienthoaiSpider(scrapy.Spider):
             yield Request(item_url, callback=self.parse_item, meta={'time': posted_time[index]})
 
         next_page_number = 2
-        while (next_page_number < 3):
+        while (next_page_number < 3204):
             absolute_next_page_url = 'https://www.chotot.com/toan-quoc/mua-ban-dien-thoai?page=' + str(
                 next_page_number)
             next_page_number = next_page_number + 1
