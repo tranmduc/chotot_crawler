@@ -2,10 +2,10 @@
 import scrapy
 from scrapy.http import Request
 from datetime import datetime
-from chotot.items import Xemay
+from chotot.items import Xe
 import leveldb
 
-db = leveldb.LevelDB("db/xemay")
+db = leveldb.LevelDB("db/xe")
 
 def insert(item):
      db.Put(item['id'].encode('UTF-8'), item['tel'].encode('UTF-8'))
@@ -21,26 +21,19 @@ def validate_time(string):
         return False
 
 
-class XemaySpider(scrapy.Spider):
-    name = 'xemay'
-    start_urls = ['http://xe.chotot.com/mua-ban-xe-may/']
-    custom_settings = {'FEED_URI': "output/chotot_xemay_%(time)s.csv",
+class XeSpider(scrapy.Spider):
+    name = 'xe'
+    start_urls = ['http://xe.chotot.com/']
+    custom_settings = {'FEED_URI': "output/chotot_xe_%(time)s.csv",
                        'FEED_FORMAT': 'csv'}
 
+
     def parse(self, response):
-        item_urls = response.xpath('//*[@class="styles__AdItemLayout-sc-1s892rt-0 gMQvHZ"]/li/a/@href').extract()
+        item_urls = response.xpath('//*[@class="styles__AdItemLayout-sc-1s892rt-0 qEHgo"]/li/a/@href').extract()
         item_urls = item_urls[5:]
-        item_infos = response.xpath('//*[@class="styles__AdDescriptionBox-sc-11gq2ty-6 deXxdP"]/span/text()').extract()
+        item_infos = response.xpath('//*[@class="styles__AdDescriptionBox-sc-11gq2ty-6 dGuTJh"]/span/text()').extract()
 
         posted_time = []
-
-        # for item_info in item_infos:
-        #     out = {'info': item_info}
-        #     yield out
-
-        # for item_url in item_urls:
-        #     out = {'info': item_url}
-        #     yield out
 
         for item_info in item_infos:
             if validate_time(item_info):
@@ -54,13 +47,13 @@ class XemaySpider(scrapy.Spider):
 
         next_page_number = 2
         while (next_page_number < 3):
-            absolute_next_page_url = 'https://xe.chotot.com/mua-ban-xe-may?page=' + str(
+            absolute_next_page_url = 'https://xe.chotot.com/?page=' + str(
                 next_page_number)
             next_page_number = next_page_number + 1
             yield Request(absolute_next_page_url, callback=self.parse)
 
     def parse_item(self, response):
-        item = Xemay()
+        item = Xe()
         id = response.request.url.split('/')[-1].split('.')[0]
         title = response.xpath('//h1[@class="styles__Title-sc-14jh840-1 lgidFF"]/text()').extract_first()
         url = response.request.url
@@ -77,42 +70,7 @@ class XemaySpider(scrapy.Spider):
 
         crawled_time = now.strftime("%d/%m/%Y %H:%M:%S")
 
-        attributes = response.xpath('//*[@class="media-body media-middle"]/span/text()').extract()
-
-        brand = ""
-        registered_year = ""
-        status = ""
-        volume = ""
-        series = ""
-        km_count = ""
-        type = ""
-        video = ""
-
-        for attr in attributes:
-            index = attributes.index(attr)
-            if (attr == "Hãng xe: "):
-                brand = attributes[index+1]
-
-            elif (attr == "Năm đăng ký: "):
-                registered_year = attributes[index+1]
-
-            elif (attr == "Tình trạng: "):
-                status = attributes[index+1]
-
-            elif (attr == "Dung tích xe: "):
-                volume = attributes[index+1]
-
-            elif (attr == "Dòng xe: "):
-                series = attributes[index+1]
-
-            elif (attr == "Số Km đã đi: "):
-                km_count = attributes[index+1]
-
-            elif (attr == "Loại xe: "):
-                type = attributes[index+1]
-
-            elif (attr == "Người bán gửi Video: "):
-                video = attributes[index+1]
+        type = response.request.url.split('/')[-2]
 
         item['id'] = id
         item['url'] = url
@@ -124,15 +82,7 @@ class XemaySpider(scrapy.Spider):
         item['seller_type'] = seller_type
         item['crawled_time'] = crawled_time
         item['posted_time'] = posted_time
-
-        item['brand'] = brand
-        item['registered_year'] = registered_year
-        item['status'] = status
-        item['volume'] = volume
-        item['series'] = series
-        item['km_count'] = km_count
         item['type'] = type
-        item['video'] = video
 
         try:
             exist = search(item)
